@@ -1,12 +1,11 @@
 # OpenBMP docker files
 Docker files for OpenBMP.
 
-(Prerequisite) Platform Docker Install
---------------------------------------
+## (Prerequisite) Platform Docker Install
 
 > Ignore this step if you already have a current docker install
 
-> ####NOTE
+> **NOTE**
 > You should use the latest docker version, documented in this section.
 
 Follow the instructions on https://docs.docker.com/get-docker/
@@ -26,20 +25,22 @@ Follow the instructions on https://docs.docker.com/get-docker/
 Make sure you can run '**docker run hello-world**' successfully.
 
 
-
-Install OpenBMP using Docker
-----------------------------
+## OpenBMP Docker Files
 Each docker file contains a readme file, see below:
 
 * [Collector](collector/README.md)
 * [PostgreSQL](postgres/README.md)
+* [PSQL Consumer](psql-consumer/README.md)
 
 
-Install OpenBMP using docker-compose
-----------------------------
-[Docker Compose](https://docs.docker.com/compose/install/) is used to run several containers.  It also handles restarting containers on reboot/restart.
+## Using Docker Compose to run everything
+
+### Install Docker Compose
+You will need docker-compose.  You can install that via [Docker Compose](https://docs.docker.com/compose/install/)
+instructions.  Docker compose will run everything, including handling restarts of containers. 
+
 
 ```
-docker-compose up
+docker-compose -p obmp up
 ```
 

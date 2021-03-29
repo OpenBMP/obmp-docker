@@ -1,0 +1,65 @@
+#!/bin/bash
+# All-in-One run script
+#
+# Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#
+# Author: Tim Evens <tim@openbmp.org>
+#
+ADMIN_ID=${ADMIN_ID:="collector"}
+
+DOCKER_HOST_IP=$(ip route | grep default | head -1 | awk '{ print $3}')
+
+if [[ ${KAFKA_FQDN:-""} == "" ]]; then
+   echo "ERROR: Missing ENV KAFKA_FQDN.  Cannot proceed until you add that in docker run -e KAFKA_FQDN=<...>"
+   exit 1
+else
+    if [[ ${KAFKA_FQDN} == "localhost" ]]; then
+        KAFKA_FQDN="docker-localhost"
+
+    elif [[ ${KAFKA_FQDN} == "127.0.0.1" ]]; then
+        KAFKA_FQDN="docker-localhost"
+
+    elif [[ ${KAFKA_FQDN} == "::1" ]]; then
+        KAFKA_FQDN="docker-localhost"
+    fi
+fi
+
+
+if [[ -f /config/openbmpd ]]; then
+    source /config/openbmpd
+else
+    source /etc/default/openbmpd
+fi
+
+#
+# System info
+#
+if [[ ${MEM:-""} = "" ]]; then    
+    SYS_TOTAL_MEM=$(grep MemTotal /proc/meminfo | awk '{print int($2 / 1000)}')
+else
+    SYS_TOTAL_MEM=$(($MEM * 1024))
+fi
+
+SYS_NUM_CPU=$(grep processor /proc/cpuinfo | wc -l)
+
+# Update the hosts file
+echo "$DOCKER_HOST_IP         docker-localhost" >> /etc/hosts
+
+# Update the etc hosts file
+if [[ -f /config/hosts ]]; then
+    cat /config/hosts >> /etc/hosts
+fi
+
+
+# Update openbmpd config file
+OPENBMP_CFG_FILE=/usr/etc/openbmp/openbmpd.conf
+sed -r -i "s/admin_id:.*/admin_id: ${ADMIN_ID}/" /usr/etc/openbmp/openbmpd.conf
+sed -r -i "s/localhost:9092/${KAFKA_FQDN}:9092/" /usr/etc/openbmp/openbmpd.conf
+
+if [[ -f /config/openbmpd.conf ]]; then
+    OPENBMP_CFG_FILE=/config/openbmpd.conf
+fi
+
+# Start openbmpd and wait - openbmpd runs in foreground
+echo "Running openbmpd collector, see /var/log/openbmpd.log"
+/usr/bin/openbmpd -f -l /var/log/openbmpd.log -c ${OPENBMP_CFG_FILE}

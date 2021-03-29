@@ -22,3 +22,9 @@ docker tag openbmp/dev-image:build-NNN openbmp/dev-image:latest
 docker push openbmp/dev-image:build-NNN
 docker push openbmp/dev-image:latest
 ```
+
+### Running
+
+```
+docker run --rm -v $(PWD):/ws -it openbmp/dev-image /bin/bash
+```
