@@ -30,7 +30,7 @@ Each docker file contains a readme file, see below:
 
 * [Collector](collector/README.md)
 * [PostgreSQL](postgres/README.md)
-* [PSQL Consumer](psql-consumer/README.md)
+* [PSQL Consumer](psql-app/README.md)
 
 
 ## Using Docker Compose to run everything
@@ -39,8 +39,33 @@ Each docker file contains a readme file, see below:
 You will need docker-compose.  You can install that via [Docker Compose](https://docs.docker.com/compose/install/)
 instructions.  Docker compose will run everything, including handling restarts of containers. 
 
+#### (1) Mount/Make persistent directories
+Create expected directories. You can choose to mount these as well or update the compose file to change them. 
+
+> **NOTE**
+> If you are using OSX/Mac, then you will need to update your docker preferences to allow ```/var/openbmp```
+
+Make sure to create the **OBMP_DATA_ROOT** directory first.  
+```
+export OBMP_DATA_ROOT=/var/openbmp
+sudo mkdir -p $OBMP_DATA_ROOT
+```
+
+Create sub directories
+```
+mkdir -p ${OBMP_DATA_ROOT}/config
+mkdir -p ${OBMP_DATA_ROOT``}/kafka-data
+mkdir -p ${OBMP_DATA_ROOT}/postgres/data
+mkdir -p ${OBMP_DATA_ROOT}/postgres/ts
+mkdir -p ${OBMP_DATA_ROOT}/grafana
+
+sudo chmod -R 7777 $OBMP_DATA_ROOT
+```
+
+
+Change ```OBMP_DATA_ROOT=<path>``` to where you created the directories above.  The default is ```/var/openbmp```
 
 ```
-docker-compose -p obmp up
+OBMP_DATA_ROOT=/var/openbmp docker-compose -p obmp up -d
 ```
 

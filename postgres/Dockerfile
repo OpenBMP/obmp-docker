@@ -18,6 +18,11 @@ FROM timescale/timescaledb:2.1.0-pg13
 VOLUME ["/ws"]
 WORKDIR /ws
 
+# Expected data locations for base tables and timeseries
+#
+VOLUME ["/var/lib/postgresql/data"]
+VOLUME ["/var/lib/postgresql/ts"]
+
 
 RUN apk update \
     && apk add openssl \
@@ -31,10 +36,12 @@ RUN apk update \
     && sed -i -e "s/^\#*listen_addresses.*=.*/listen_addresses = '*'/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl[ ]*=.*/ssl = on/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_cert_file.*=.*/ssl_cert_file = \'\/psql_server.crt\'/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample
+    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && sed -i -e "s/^\#*shared_buffers.*=.*/shared_buffers = ${MEM:-'1'}GB/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && sed -i -e "s/^\#*work_mem.*=.*/work_mem = $(( (${MEM:-1} * 1024) * 5 / 100))MB/" /usr/local/share/postgresql/postgresql.conf.sample
 
-#RUN echo 'psql -U $POSTGRES_USER -c "CREATE TABLESPACE timeseries LOCATION '\''/var/lib/postgresql/ts'\'';" $POSTGRES_DB' > /docker-entrypoint-initdb.d/0_cnis_schema.sh \
-#    && echo 'psql -U $POSTGRES_USER $POSTGRES_DB < /tmp/cnis-mq.sql' >> /docker-entrypoint-initdb.d/0_cnis_schema.sh \
-#    && echo 'psql -U $POSTGRES_USER $POSTGRES_DB < /tmp/cnis-mq-functions.sql' >> /docker-entrypoint-initdb.d/0_cnis_schema.sh \
-#    && echo 'psql -U $POSTGRES_USER $POSTGRES_DB < /tmp/dev-psql.sql' >> /docker-entrypoint-initdb.d/0_cnis_schema.sh
+# Init timesries location
+RUN echo 'psql -U $POSTGRES_USER -c "CREATE TABLESPACE timeseries LOCATION '\''/var/lib/postgresql/ts'\'';" $POSTGRES_DB' > /docker-entrypoint-initdb.d/0_obmp_init.sh
+
+
 

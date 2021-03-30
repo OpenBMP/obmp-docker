@@ -1,0 +1,243 @@
+#!/bin/bash
+# Postgres Backend: Run script
+#
+#  Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#
+# Author: Tim Evens <tim@evensweb.com>
+#
+
+# Postgres details - Can be set using docker -e
+export POSTGRES_USER=${POSTGRES_USER:="openbmp"}
+export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:="openbmp"}
+export POSTGRES_HOST=${POSTGRES_HOST:="127.0.0.1"}
+export POSTGRES_DB=${POSTGRES_DB:="openbmp"}
+export MEM=${MEM:="1"}                          # mem in gigabytes
+export PGCONNECT_TIMEOUT=15
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Functions
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# -----------------------------------------------
+# Check Kafka to make sure it's valid
+# -----------------------------------------------
+check_kafka() {
+    echo "===> Performing Kafka check"
+
+    if [[ ${KAFKA_FQDN:-""} == "" ]]; then
+       echo "ERROR: Missing ENV KAFKA_FQDN.  Cannot proceed until you add that in docker run -e KAFKA_FQDN=<...>"
+       exit 1
+
+    fi
+
+    echo "===> Checking Kafka bootstrap server connection"
+    kafkacat -u -b $KAFKA_FQDN -L | grep broker
+
+    if [[ $? -ne 0 ]]; then
+        echo "ERROR: Failed to connect to Kafka at $KAFKA_FQDN, check the docker run -e KAFKA_FQDN= value"
+        exit 1
+    fi
+
+    echo "testing" | timeout 5 kafkacat -b $KAFKA_FQDN -P -t openbmp.parsed.test
+    echo "===> Checking if we can successfully consume messages"
+    timeout 5 kafkacat -u -b $KAFKA_FQDN -C -c 1 -o beginning -t openbmp.parsed.test > /dev/null
+
+    if [[ $? -ne 0 ]]; then
+        echo "ERROR: Failed to connect to Kafka broker, check the Kafka 'advertised.listeners' configuration."
+        echo "       Advertised hostname must be reachable within the container. You can run this container"
+        echo "       with --add-host <hostname>:<ip> to map the ip address within the container."
+        echo "       You can also add/update the persistent /config/hosts file with the broker hostname/ip."
+        exit 1
+    fi
+}
+
+# -----------------------------------------------
+# Configure Postgres shell profile
+# -----------------------------------------------
+config_postgres_profile() {
+    echo "===> Configuring PostgreSQL Shell Profile"
+
+    echo "export PGUSER=$POSTGRES_USER" > /usr/local/openbmp/pg_profile
+    echo "export PGPASSWORD=$POSTGRES_PASSWORD" >> /usr/local/openbmp/pg_profile
+    echo "export PGHOST=$POSTGRES_HOST" >> /usr/local/openbmp/pg_profile
+    echo "export PGDATABASE=$POSTGRES_DB" >> /usr/local/openbmp/pg_profile
+}
+
+# -----------------------------------------------
+# Initdb Postgres
+# -----------------------------------------------
+initdb_postgres() {
+    echo " ===> Initializing the DB"
+
+    # Load the schema files
+    echo " ===> Loading Schemas"
+
+    echo "------" > /var/log/db_schema_load.log
+    for file in $(ls -v /usr/local/openbmp/db_schema/*.sql); do
+      echo " ===[ $file ] ========================================" >> /var/log/db_schema_load.log
+      su - -c "psql -U $POSTGRES_USER $POSTGRES_DB < $file" >> /var/log/db_schema_load.log  2>&1
+    done
+}
+
+# -----------------------------------------------
+# Update hosts file
+# -----------------------------------------------
+update_hosts() {
+    echo "===> Updating /etc/hosts"
+
+    # Update the etc hosts file
+    if [[ -f /config/hosts ]]; then
+        cat /config/hosts >> /etc/hosts
+    fi
+}
+
+# -----------------------------------------------
+# Enable RPKI
+# -----------------------------------------------
+enable_rpki() {
+    echo "===> Enabling RPKI"
+
+    cat > /etc/cron.d/openbmp-rpki <<SETVAR
+MAILTO=""
+
+# Update RPKI
+31 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/rpki_validator.py -u $PGUSER -p $PGPASSWORD -s 127.0.0.1:8080 $PGHOST
+
+SETVAR
+
+    echo "===> Downloading and Installing ARIN TAL"
+    wget -q https://www.arin.net/resources/manage/rpki/arin-rfc7730.tal -O /usr/local/rpki/preconfigured-tals/arin.tal
+
+    # start RPKI validator
+    /usr/local/rpki/rpki-validator-3.sh > /var/log/rpki-validator.log &
+}
+
+# -----------------------------------------------
+# Enable IRR
+# -----------------------------------------------
+enable_irr() {
+    echo "===> Enabling IRR"
+
+    cat > /etc/cron.d/openbmp-irr <<SETVAR
+MAILTO=""
+
+# Update IRR
+1 1 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/irr_load.log
+
+SETVAR
+
+    # Load IRR data
+    echo "Loading IRR data"
+    /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/irr_load.log &
+}
+
+# -----------------------------------------------
+# config_cron
+# -----------------------------------------------
+config_cron() {
+    cat > /etc/cron.d/openbmp <<SETVAR
+MAILTO=""
+
+# Update ASN info
+6 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST >> /var/log/asn_load.log
+
+# Update aggregation table stats
+*/3 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats('8 minute')"
+
+# Update peer rib counts
+*/15 * * * *	root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_rib_counts()"
+
+# Update peer update counts
+*/30 * * * *    root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_update_counts(1800)"
+
+# Update origin stats
+21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib();"
+
+# Purge time series data that is older than desired retention
+0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks(interval '4 weeks');"
+
+SETVAR
+
+}
+
+# -----------------------------------------------
+# run_consumer
+# -----------------------------------------------
+run_consumer() {
+    echo "===> Starting consumer"
+
+    if [[ ! -f /config/obmp-psql.yml ]]; then
+        cd /config
+        unzip /usr/local/openbmp/obmp-psql-consumer.jar obmp-psql.yml
+
+
+        if [[ ! -f /config/obmp-psql.yml ]]; then
+            echo "ERROR: Cannot create /config/obmp-psql.yml"
+            echo "       Update permissions on /config volume to 7777 OR add configuration file to /config volume"
+            exit 1
+        fi
+
+         # Update configuration
+        sed -i -e "s/\([ ]*bootstrap.servers:\)\(.*\)/\1 \"${KAFKA_FQDN}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*host[ ]*:\)\(.*\)/\1 \"${POSTGRES_HOST}\"/" /config/obmp-psql.yml
+
+    fi
+
+    if [[ $MEM -gt 20 ]]; then
+        heap_mem="3g"
+    else
+        heap_mem="1536m"
+    fi
+
+    # Run
+    cd /var/log
+    java -Xmx${heap_mem} -Xms128m -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions \
+         -XX:InitiatingHeapOccupancyPercent=30 -XX:G1MixedGCLiveThresholdPercent=30 \
+         -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
+         -Duser.timezone=UTC \
+         -jar /usr/local/openbmp/obmp-psql-consumer.jar \
+         -cf /config/obmp-psql.yml > /var/log/psql-console.log &
+
+    cd /tmp
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Run
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+SYS_NUM_CPU=$(grep processor /proc/cpuinfo | wc -l)
+
+update_hosts
+
+check_kafka
+
+config_cron
+
+config_postgres_profile
+
+rm -f /etc/cron.d/openbmp-rpki
+if [[ ${ENABLE_RPKI:-""} != "" ]]; then
+    enable_rpki
+fi
+
+rm -f /etc/cron.d/openbmp-irr
+if [[ ${ENABLE_IRR:-""} != "" ]]; then
+    enable_irr
+fi
+
+
+initdb_postgres
+
+# Get rid of previous rsyslogd pid
+rm -f /var/run/rsyslogd.pid
+
+#service rsyslog start
+#service cron start
+
+
+run_consumer
+
+echo "===> Now running!!!"
+
+while [ 1 ]; do
+    sleep 1800
+done
