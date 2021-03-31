@@ -54,14 +54,19 @@ sudo mkdir -p $OBMP_DATA_ROOT
 Create sub directories
 ```
 mkdir -p ${OBMP_DATA_ROOT}/config
-mkdir -p ${OBMP_DATA_ROOT``}/kafka-data
+mkdir -p ${OBMP_DATA_ROOT}/kafka-data
+mkdir -p ${OBMP_DATA_ROOT}/zk-data
+mkdir -p ${OBMP_DATA_ROOT}/zk-log
 mkdir -p ${OBMP_DATA_ROOT}/postgres/data
 mkdir -p ${OBMP_DATA_ROOT}/postgres/ts
 mkdir -p ${OBMP_DATA_ROOT}/grafana
+mkdir -p ${OBMP_DATA_ROOT}/grafana/dashboards
 
 sudo chmod -R 7777 $OBMP_DATA_ROOT
 ```
 
+> In order to init the DB tables, you must create the file ```${OBMP_DATA_ROOT}/config/init_db```.  This should
+> only be done once or whenever you want to completely wipe out the DB and start over. 
 
 Change ```OBMP_DATA_ROOT=<path>``` to where you created the directories above.  The default is ```/var/openbmp```
 

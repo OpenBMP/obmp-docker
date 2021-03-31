@@ -4,15 +4,18 @@ services:
 
   zookeeper:
     restart: unless-stopped
-    container_name: zookeeper
+    container_name: obmp-zookeeper
     image: confluentinc/cp-zookeeper:6.0.2
+    volumes:
+      - ${OBMP_DATA_ROOT}/zk-data:/var/lib/zookeeper/data
+      - ${OBMP_DATA_ROOT}/zk-log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
     restart: unless-stopped
-    container_name: kafka
+    container_name: obmp-kafka
     image: confluentinc/cp-kafka:6.0.2
 
     # Change the mount point to where you want to store Kafka data.
@@ -25,13 +28,13 @@ services:
       - 9092:9092
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECT: obmp-zookeeper:2181
 
       # Change/add listeners based on your FQDN that the host and other containers can access.  You can use
       #    an IP address as well. By default, only within the compose/containers can Kafka be accesssed
       #    using port 29092.   Outside access can be enabled, but you should use an FQDN listener.
       #KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://<FQDN>:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://obmp-kafka:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -44,13 +47,13 @@ services:
 
   grafana:
     restart: unless-stopped
-    container_name: grafana
+    container_name: obmp-grafana
     image: grafana/grafana:latest
     ports:
       - 3000:3000
     volumes:
       - ${OBMP_DATA_ROOT}/grafana:/var/lib/grafana
-      - ${OBMP_DATA_ROOT}/grafana-provisioning/:/etc/grafana/provisioning/
+      - ${OBMP_DATA_ROOT}/grafana/provisioning:/etc/grafana/provisioning/
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=openbmp
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -59,7 +62,7 @@ services:
 
   psql:
     restart: unless-stopped
-    container_name: psql
+    container_name: obmp-psql
     image: openbmp/postgres:build-50
     ports:
       - 5432:5432
@@ -74,7 +77,7 @@ services:
 
   collector:
     restart: unless-stopped
-    container_name: collector
+    container_name: obmp-collector
     image: openbmp/collector:build-50
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
@@ -85,11 +88,11 @@ services:
     volumes:
       - ${OBMP_DATA_ROOT}/config:/config
     environment:
-      - KAFKA_FQDN=kafka:29092
+      - KAFKA_FQDN=obmp-kafka:29092
 
   psql-app:
     restart: unless-stopped
-    container_name: psql-app
+    container_name: obmp-psql-app
     image: openbmp/psql-app:build-50
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
@@ -102,10 +105,11 @@ services:
       - ${OBMP_DATA_ROOT}/config:/config
     environment:
       - MEM=2                                           # Set memory to at least 2GB but ideally 4GB
-      - KAFKA_FQDN=kafka:29092
+      - KAFKA_FQDN=obmp-kafka:29092
       - ENABLE_RPKI=0                                   # 1 enables, 0 disables RPKI sync
       - ENABLE_IRR=0                                    # 1 enables, 0 disables IRR sync
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
       - POSTGRES_DB=openbmp
-      - POSTGRES_HOST=psql:5432
+      - POSTGRES_HOST=obmp-psql
+      - POSTGRES_PORT=5432

@@ -10,6 +10,7 @@
 export POSTGRES_USER=${POSTGRES_USER:="openbmp"}
 export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:="openbmp"}
 export POSTGRES_HOST=${POSTGRES_HOST:="127.0.0.1"}
+exprot POSTGRES_PORT=${POSTGRES_PORT:="5432"}
 export POSTGRES_DB=${POSTGRES_DB:="openbmp"}
 export MEM=${MEM:="1"}                          # mem in gigabytes
 export PGCONNECT_TIMEOUT=15
@@ -60,6 +61,7 @@ config_postgres_profile() {
     echo "export PGUSER=$POSTGRES_USER" > /usr/local/openbmp/pg_profile
     echo "export PGPASSWORD=$POSTGRES_PASSWORD" >> /usr/local/openbmp/pg_profile
     echo "export PGHOST=$POSTGRES_HOST" >> /usr/local/openbmp/pg_profile
+    echo "export PGPORT=$POSTGRES_PORT" >> /usr/local/openbmp/pg_profile
     echo "export PGDATABASE=$POSTGRES_DB" >> /usr/local/openbmp/pg_profile
 }
 
@@ -67,16 +69,21 @@ config_postgres_profile() {
 # Initdb Postgres
 # -----------------------------------------------
 initdb_postgres() {
-    echo " ===> Initializing the DB"
+    if [[ -f /config/init_db ]]; then
+      echo " ===> Initializing the DB"
 
-    # Load the schema files
-    echo " ===> Loading Schemas"
+      # Load the schema files
+      echo " ===> Loading Schemas"
 
-    echo "------" > /var/log/db_schema_load.log
-    for file in $(ls -v /usr/local/openbmp/db_schema/*.sql); do
-      echo " ===[ $file ] ========================================" >> /var/log/db_schema_load.log
-      su - -c "psql -U $POSTGRES_USER $POSTGRES_DB < $file" >> /var/log/db_schema_load.log  2>&1
-    done
+
+      echo "------" > /var/log/db_schema_load.log
+      for file in $(ls -v /usr/local/openbmp/database/*.sql); do
+        echo " ===[ $file ] ========================================" >> /var/log/db_schema_load.log
+        psql < $file >> /var/log/db_schema_load.log  2>&1
+      done
+
+      rm -f /config/init_db
+    fi
 }
 
 # -----------------------------------------------
@@ -210,9 +217,11 @@ update_hosts
 
 check_kafka
 
-config_cron
-
 config_postgres_profile
+
+source /usr/local/openbmp/pg_profile
+
+config_cron
 
 rm -f /etc/cron.d/openbmp-rpki
 if [[ ${ENABLE_RPKI:-""} != "" ]]; then
