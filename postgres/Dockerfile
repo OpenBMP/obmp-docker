@@ -41,7 +41,9 @@ RUN apk update \
     && sed -i -e "s/^\#*work_mem.*=.*/work_mem = $(( (${MEM:-1} * 1024) * 5 / 100))MB/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Init timesries location
-RUN echo 'psql -U $POSTGRES_USER -c "CREATE TABLESPACE timeseries LOCATION '\''/var/lib/postgresql/ts'\'';" $POSTGRES_DB' > /docker-entrypoint-initdb.d/0_obmp_init.sh
+RUN echo 'chown postgres:postgres /var/lib/postgresql/ts' > /docker-entrypoint-initdb.d/0_obmp_init.sh \
+    echo 'chmod 0700 /var/lib/postgresql/ts' >> /docker-entrypoint-initdb.d/0_obmp_init.sh \
+    && echo 'psql -U $POSTGRES_USER -c "CREATE TABLESPACE timeseries LOCATION '\''/var/lib/postgresql/ts'\'';" $POSTGRES_DB' > /docker-entrypoint-initdb.d/0_obmp_init.sh
 
 
 
