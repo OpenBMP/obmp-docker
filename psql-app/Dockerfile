@@ -75,8 +75,6 @@ RUN touch /usr/local/build-${BUILD_NUMBER} \
 
 #----------------------------------
 # Install depends
-#     Depends are installed in layers so that this doesn't have to be done each time
-#     the image is built.
 RUN apt-get update \
     && apt-get install --allow-unauthenticated -y unzip curl wget whois vim rsyslog cron rsync kafkacat \
         procps python3-minimal python3-distutils python3-psycopg2  python3-dnspython postgresql-client \
@@ -85,13 +83,7 @@ RUN apt-get update \
 RUN cd /tmp && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3 get-pip.py
 
-RUN pip install ipaddr
-
-# Install latest postgres client
-#RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-#    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
-#    && apt-get update
-#    && apt-get install postgresql-13-client
+RUN pip install ipaddr pykafka
 
 # Cleanup
 RUN apt-get autoremove && apt-get clean

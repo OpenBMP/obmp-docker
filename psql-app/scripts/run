@@ -69,7 +69,7 @@ config_postgres_profile() {
 # Initdb Postgres
 # -----------------------------------------------
 initdb_postgres() {
-    if [[ -f /config/init_db ]]; then
+    if [[ ! -f /config/do_not_init_db ]]; then
       echo " ===> Initializing the DB"
 
       # Load the schema files
@@ -82,7 +82,7 @@ initdb_postgres() {
         psql < $file >> /var/log/db_schema_load.log  2>&1
       done
 
-      rm -f /config/init_db
+      touch /config/do_not_init_db
     fi
 }
 
@@ -239,9 +239,8 @@ initdb_postgres
 # Get rid of previous rsyslogd pid
 rm -f /var/run/rsyslogd.pid
 
-#service rsyslog start
-#service cron start
-
+service cron start
+service rsyslogd start
 
 run_consumer
 
