@@ -37,7 +37,7 @@ RUN apk update \
     && sed -i -e "s/^\#*ssl[ ]*=.*/ssl = on/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_cert_file.*=.*/ssl_cert_file = \'\/psql_server.crt\'/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*shared_buffers.*=.*/shared_buffers = ${MEM:-'1'}GB/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && sed -i -e "s/^\#*shared_buffers.*=.*/shared_buffers = ${MEM:-1}GB/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*work_mem.*=.*/work_mem = $(( (${MEM:-1} * 1024) * 5 / 100))MB/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Init timesries location

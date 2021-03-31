@@ -70,7 +70,7 @@ services:
       - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
       - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
     environment:
-      - MEM=2                                                     # Set MEM to at least 2GB but ideally >16GB
+      - MEM=10                                                     # Set MEM to at least 2GB but ideally >16GB
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
       - POSTGRES_DB=openbmp
@@ -104,10 +104,10 @@ services:
     volumes:
       - ${OBMP_DATA_ROOT}/config:/config
     environment:
-      - MEM=2                                           # Set memory to at least 2GB but ideally 4GB
+      - MEM=4                                           # Set memory to at least 2GB but ideally 4GB
       - KAFKA_FQDN=obmp-kafka:29092
-      - ENABLE_RPKI=0                                   # 1 enables, 0 disables RPKI sync
-      - ENABLE_IRR=0                                    # 1 enables, 0 disables IRR sync
+      - ENABLE_RPKI=1                                   # 1 enables, 0 disables RPKI sync
+      - ENABLE_IRR=1                                    # 1 enables, 0 disables IRR sync
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
       - POSTGRES_DB=openbmp
