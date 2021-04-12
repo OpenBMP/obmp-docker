@@ -161,7 +161,13 @@ MAILTO=""
 21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib();"
 
 # Purge time series data that is older than desired retention
-0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks(interval '4 weeks');"
+0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('peer_event_log', interval '1 year');"
+1 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stat_reports', 'interval 4 weeks');"
+2 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ip_rib_log', interval '4 weeks');"
+3 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('alerts', interval '6 months');"
+4 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_nodes_log', interval '4 months');"
+5 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_links_log', interval '4 months');"
+6 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_prefixes_log', interval '4 months');"
 
 SETVAR
 
@@ -240,7 +246,7 @@ initdb_postgres
 rm -f /var/run/rsyslogd.pid
 
 service cron start
-service rsyslogd start
+service rsyslog start
 
 run_consumer
 
