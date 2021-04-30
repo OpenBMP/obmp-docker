@@ -108,15 +108,10 @@ enable_rpki() {
 MAILTO=""
 
 # Update RPKI
-31 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/rpki_validator.py -u $PGUSER -p $PGPASSWORD -s 127.0.0.1:8080 $PGHOST
+31 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/rpki_validator.py -u $PGUSER -p $PGPASSWORD -s $RPKI_URL --rpkipassword $RPKI_PASS --rpkiuser $RPKI_USER $PGHOST
 
 SETVAR
 
-    echo "===> Downloading and Installing ARIN TAL"
-    wget -q https://www.arin.net/resources/manage/rpki/arin-rfc7730.tal -O /usr/local/rpki/preconfigured-tals/arin.tal
-
-    # start RPKI validator
-    /usr/local/rpki/rpki-validator-3.sh > /var/log/rpki-validator.log &
 }
 
 # -----------------------------------------------
@@ -149,7 +144,7 @@ MAILTO=""
 6 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST >> /var/log/asn_load.log
 
 # Update aggregation table stats
-*/3 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats('8 minute')"
+*/3 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats($POSTGRES_REPORT_WINDOW)"
 
 # Update peer rib counts
 */15 * * * *	root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_rib_counts()"
