@@ -100,14 +100,20 @@ services:
       - net.ipv4.tcp_keepalive_time=180
     ports:
       - 9005:9005
-      - 8080:8080
+
     volumes:
       - ${OBMP_DATA_ROOT}/config:/config
     environment:
       - MEM=4                                           # Set memory to at least 2GB but ideally 4GB
       - KAFKA_FQDN=obmp-kafka:29092
+      - RPKI_URL=https://rpki.cloudflare.com/rpki.json  # define the URL to retrieve json endoed RPKI data
+      - RPKI_PASS=None
+      - RPKI_USER=None
       - ENABLE_RPKI=1                                   # 1 enables, 0 disables RPKI sync
       - ENABLE_IRR=1                                    # 1 enables, 0 disables IRR sync
+      - POSTGRES_REPORT_WINDOW='8 minute'               # default POSTGRESS window to select when building
+                                                        # summary tables. For deployments that absorb large
+                                                        # bursts increase the value, ex 60 minute
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
       - POSTGRES_DB=openbmp

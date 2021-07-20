@@ -62,9 +62,6 @@ VOLUME ["/config"]
 # Consumer JMX console
 EXPOSE 9005
 
-# RPKI Validator port
-EXPOSE 8080
-
 #----------------------------------
 # Define working directory.
 WORKDIR /tmp
@@ -85,23 +82,11 @@ RUN cd /tmp && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
 
 RUN pip install ipaddr pykafka
 
+RUN pip3 install urllib3 requests
+
 # Cleanup
 RUN apt-get autoremove && apt-get clean
 
-#----------------------------------
-# Install RPKI validator (https://github.com/RIPE-NCC/rpki-validator-3/wiki)
-RUN mkdir /usr/local/rpki && cd /tmp \
-    && wget https://ftp.ripe.net/tools/rpki/validator3/prod/generic/rpki-validator-3-latest-dist.tar.gz \
-    && tar xzf rpki-validator-3-latest-dist.tar.gz \
-    && cd rpki-validator-*/ \
-    && mv * /usr/local/rpki/ \
-    && rm -rf /tmp/rpki-* \
-    && cd /usr/local/rpki \
-    && sed -i -r 's/.*server.address=.*/server.address=0.0.0.0/' /usr/local/rpki/conf/application.properties \
-    && sed -i -r 's/jvm.mem.maximum=.*/jvm.mem.maximum=2g/' /usr/local/rpki/conf/application.properties
-
-
-#----------------------------------
 # Define default command.
 CMD ["/usr/sbin/run"]
 
