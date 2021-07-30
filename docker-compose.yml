@@ -119,3 +119,16 @@ services:
       - POSTGRES_DB=openbmp
       - POSTGRES_HOST=obmp-psql
       - POSTGRES_PORT=5432
+      - POSTGRES_DROP_peer_event_log='1 year'
+      - POSTGRES_DROP_stat_reports='4 weeks'
+      - POSTGRES_DROP_ip_rib_log='4 weeks'
+      - POSTGRES_DROP_alerts='4 weeks'
+      - POSTGRES_DROP_ls_nodes_log='4 months'
+      - POSTGRES_DROP_ls_links_log='4 months'
+      - POSTGRES_DROP_ls_prefixes_log='4 months'
+      - POSTGRES_DROP_stats_chg_byprefix='4 weeks'
+      - POSTGRES_DROP_stats_chg_byasn='4 weeks'
+      - POSTGRES_DROP_stats_chg_bypeer='4 weeks'
+      - POSTGRES_DROP_stats_ip_origins='4 weeks'
+      - POSTGRES_DROP_stats_peer_rib='4 weeks'
+      - POSTGRES_DROP_stats_peer_update_counts='4 weeks'
