@@ -156,13 +156,19 @@ MAILTO=""
 21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib();"
 
 # Purge time series data that is older than desired retention
-0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('peer_event_log', interval '1 year');"
-1 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stat_reports', interval '4 weeks');"
-2 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ip_rib_log', interval '4 weeks');"
-3 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('alerts', interval '6 months');"
-4 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_nodes_log', interval '4 months');"
-5 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_links_log', interval '4 months');"
-6 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_prefixes_log', interval '4 months');"
+0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('peer_event_log', interval $POSTGRES_DROP_peer_event_log);"
+1 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stat_reports', interval $POSTGRES_DROP_stat_reports);"
+2 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ip_rib_log', interval $POSTGRES_DROP_ip_rib_log);"
+3 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('alerts', interval $POSTGRES_DROP_alerts);"
+4 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_nodes_log', interval $POSTGRES_DROP_ls_nodes_log);"
+5 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_links_log', interval $POSTGRES_DROP_ls_links_log);"
+6 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_prefixes_log', interval $POSTGRES_DROP_ls_prefixes_log);"
+7 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_byprefix', interval $POSTGRES_DROP_stats_chg_byprefix);"
+8 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_byasn', interval $POSTGRES_DROP_stats_chg_byasn);"
+9 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_bypeer', interval $POSTGRES_DROP_stats_chg_bypeer);"
+10 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_ip_origins', interval $POSTGRES_DROP_stats_ip_origins);"
+11 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_peer_rib', interval $POSTGRES_DROP_stats_peer_rib);"
+12 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_peer_update_counts', interval $POSTGRES_DROP_stats_peer_update_counts);"
 
 SETVAR
 
