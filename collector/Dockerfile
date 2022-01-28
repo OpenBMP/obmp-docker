@@ -1,6 +1,6 @@
 # Collector: openbmp/collector
 #
-#  Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
@@ -15,8 +15,8 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-collector ./obmp-docker/collector \
-#           | docker build --build-arg BUILD_NUMBER=50 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:build-50 -
+#           | docker build --build-arg VERSION=2.0.1 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.0.1 -
 #
 
 # -----------------------------------------------
@@ -43,7 +43,7 @@ FROM debian:bullseye-slim
 ADD obmp-docker/collector/scripts/install /tmp/
 ADD obmp-docker/collector/scripts/run /usr/sbin/
 
-ARG BUILD_NUMBER=0
+ARG VERSION=0
 
 # Copy files from previous stages
 COPY --from=build /usr/bin/openbmpd /usr/bin/

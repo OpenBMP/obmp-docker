@@ -1,6 +1,6 @@
 # Postgres Backend: openbmp/psql-consumer
 #
-# Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+# Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
@@ -13,15 +13,15 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
-#           | docker build --build-arg BUILD_NUMBER=50 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:build-50 -
+#           | docker build --build-arg VERSION=2.0.1 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.0.1 -
 
 # -----------------------------------------------
 # stage: Build
 # -----------------------------------------------
 FROM openbmp/dev-image:latest AS build
 
-ARG BUILD_NUMBER=0
+ARG VERSION=0.0.0
 
 # Proxy servers
 #ENV http_proxy http://proxy:80
@@ -67,7 +67,7 @@ EXPOSE 9005
 WORKDIR /tmp
 
 # Base setup tasks
-RUN touch /usr/local/build-${BUILD_NUMBER} \
+RUN touch /usr/local/version-${VERSION} \
     && chmod 755 /usr/local/openbmp/*.py
 
 #----------------------------------

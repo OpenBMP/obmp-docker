@@ -1,7 +1,7 @@
 #!/bin/bash
 # Postgres Backend: Run script
 #
-#  Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 # Author: Tim Evens <tim@evensweb.com>
 #
@@ -12,6 +12,8 @@ export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:="openbmp"}
 export POSTGRES_HOST=${POSTGRES_HOST:="127.0.0.1"}
 export POSTGRES_PORT=${POSTGRES_PORT:="5432"}
 export POSTGRES_DB=${POSTGRES_DB:="openbmp"}
+export POSTGRES_SSL_ENABLE=${POSTGRES_SSL_ENABLE:="port"}
+export POSTGRES_SSL_MODE=${POSTGRES_SSL_MODE:="required"}
 export MEM=${MEM:="1"}                          # mem in gigabytes
 export PGCONNECT_TIMEOUT=15
 
@@ -152,23 +154,12 @@ MAILTO=""
 # Update peer update counts
 */30 * * * *    root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_update_counts(1800)"
 
-# Update origin stats
-21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib();"
+# Update global rib
+*/5 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib('5 minute');"
 
-# Purge time series data that is older than desired retention
-0 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('peer_event_log', interval $POSTGRES_DROP_peer_event_log);"
-1 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stat_reports', interval $POSTGRES_DROP_stat_reports);"
-2 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ip_rib_log', interval $POSTGRES_DROP_ip_rib_log);"
-3 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('alerts', interval $POSTGRES_DROP_alerts);"
-4 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_nodes_log', interval $POSTGRES_DROP_ls_nodes_log);"
-5 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_links_log', interval $POSTGRES_DROP_ls_links_log);"
-6 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('ls_prefixes_log', interval $POSTGRES_DROP_ls_prefixes_log);"
-7 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_byprefix', interval $POSTGRES_DROP_stats_chg_byprefix);"
-8 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_byasn', interval $POSTGRES_DROP_stats_chg_byasn);"
-9 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_chg_bypeer', interval $POSTGRES_DROP_stats_chg_bypeer);"
-10 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_ip_origins', interval $POSTGRES_DROP_stats_ip_origins);"
-11 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_peer_rib', interval $POSTGRES_DROP_stats_peer_rib);"
-12 * */3 * *     root  . /usr/local/openbmp/pg_profile && psql -c "SELECT drop_chunks('stats_peer_update_counts', interval $POSTGRES_DROP_stats_peer_update_counts);"
+# Update origin stats
+21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_origin_stats('1 hour');"
+
 
 SETVAR
 
@@ -193,8 +184,12 @@ run_consumer() {
 
          # Update configuration
         sed -i -e "s/\([ ]*bootstrap.servers:\)\(.*\)/\1 \"${KAFKA_FQDN}\"/" /config/obmp-psql.yml
-        sed -i -e "s/\([ ]*host[ ]*:\)\(.*\)/\1 \"${POSTGRES_HOST}\"/" /config/obmp-psql.yml
-
+        sed -i -e "s/\([ ]*host[ ]*:\)\(.*\)/\1 \"${POSTGRES_HOST}:${POSTGRES_PORT}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*username[ ]*:\)\(.*\)/\1 \"${POSTGRES_USER}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*password[ ]*:\)\(.*\)/\1 \"${POSTGRES_PASSWORD}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*db_name[ ]*:\)\(.*\)/\1 \"${POSTGRES_DB}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*ssl_enable[ ]*:\)\(.*\)/\1 \"${POSTGRES_SSL_ENABLE}\"/" /config/obmp-psql.yml
+        sed -i -e "s/\([ ]*ssl_mode[ ]*:\)\(.*\)/\1 \"${POSTGRES_SSL_MODE}\"/" /config/obmp-psql.yml
     fi
 
     if [[ $MEM -gt 20 ]]; then

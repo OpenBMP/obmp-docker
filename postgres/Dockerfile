@@ -1,18 +1,18 @@
 # Postgres Container
 #
-#  Copyright (c) 2021 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 #  Build:
-#       docker build -t openbmp/postgres:build-NNN .
+#       docker build -t openbmp/postgres:2.0.1 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \
 #              -e POSTGRES_PASSWORD=openbmp \
 #              -e POSTGRES_USER=openbmp \
 #              -e POSTGRES_DB=openbmp \
-#              openbmp/postgres:build-NNN
+#              openbmp/postgres:2.0.1
 
-FROM timescale/timescaledb:2.1.0-pg13
+FROM timescale/timescaledb:2.5.1-pg14
 
 # Current/working dir
 VOLUME ["/ws"]

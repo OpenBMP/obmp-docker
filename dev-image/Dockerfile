@@ -1,7 +1,7 @@
 # Development build container: openbmp/dev-image
 #
-#  Copyright (c) 2021 Cisco Systems, Inc. and others.  All rights reserved.
-#  Copyright (c) 2021 Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
+#  Copyright (c) 2021-2022 Tim Evens.  All rights reserved.
 #
 #  Container used to build the OpenBMP components
 #
