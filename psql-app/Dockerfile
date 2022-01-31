@@ -13,8 +13,8 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
-#           | docker build --build-arg VERSION=2.0.1 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.0.1 -
+#           | docker build --build-arg VERSION=2.0.2 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.0.2 -
 
 # -----------------------------------------------
 # stage: Build

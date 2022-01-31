@@ -63,7 +63,7 @@ services:
   psql:
     restart: unless-stopped
     container_name: obmp-psql
-    image: openbmp/postgres:2.0.1
+    image: openbmp/postgres:2.0.2
     ports:
       - 5432:5432
     volumes:
@@ -78,7 +78,7 @@ services:
   collector:
     restart: unless-stopped
     container_name: obmp-collector
-    image: openbmp/collector:2.0.1
+    image: openbmp/collector:2.0.2
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5
@@ -93,7 +93,7 @@ services:
   psql-app:
     restart: unless-stopped
     container_name: obmp-psql-app
-    image: openbmp/psql-app:2.0.1
+    image: openbmp/psql-app:2.0.2
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5

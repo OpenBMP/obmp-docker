@@ -3,14 +3,14 @@
 #  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 #  Build:
-#       docker build -t openbmp/postgres:2.0.1 .
+#       docker build -t openbmp/postgres:2.0.2 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \
 #              -e POSTGRES_PASSWORD=openbmp \
 #              -e POSTGRES_USER=openbmp \
 #              -e POSTGRES_DB=openbmp \
-#              openbmp/postgres:2.0.1
+#              openbmp/postgres:2.0.2
 
 FROM timescale/timescaledb:2.5.1-pg14
 

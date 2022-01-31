@@ -12,8 +12,8 @@ export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:="openbmp"}
 export POSTGRES_HOST=${POSTGRES_HOST:="127.0.0.1"}
 export POSTGRES_PORT=${POSTGRES_PORT:="5432"}
 export POSTGRES_DB=${POSTGRES_DB:="openbmp"}
-export POSTGRES_SSL_ENABLE=${POSTGRES_SSL_ENABLE:="port"}
-export POSTGRES_SSL_MODE=${POSTGRES_SSL_MODE:="required"}
+export POSTGRES_SSL_ENABLE=${POSTGRES_SSL_ENABLE:="true"}
+export POSTGRES_SSL_MODE=${POSTGRES_SSL_MODE:="require"}
 export MEM=${MEM:="1"}                          # mem in gigabytes
 export PGCONNECT_TIMEOUT=15
 
