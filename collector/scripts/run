@@ -60,6 +60,11 @@ if [[ -f /config/openbmpd.conf ]]; then
     OPENBMP_CFG_FILE=/config/openbmpd.conf
 fi
 
+# Startup delay to allow for Kafka to start if not already running
+ehco "Waiting 30 seconds to allow for Kafka and other containers to startup."
+sleep 30
+
 # Start openbmpd and wait - openbmpd runs in foreground
+
 echo "Running openbmpd collector, see /var/log/openbmpd.log "
 /usr/bin/openbmpd -f -l /var/log/openbmpd.log -c ${OPENBMP_CFG_FILE}

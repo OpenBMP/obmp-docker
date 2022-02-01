@@ -3,7 +3,7 @@
 #  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
 #  Build:
-#       docker build -t openbmp/postgres:2.0.2 .
+#       docker build -t openbmp/postgres:2.0.3 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \

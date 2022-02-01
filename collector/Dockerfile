@@ -15,8 +15,8 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-collector ./obmp-docker/collector \
-#           | docker build --build-arg VERSION=2.0.2 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.0.2 -
+#           | docker build --build-arg VERSION=2.0.3 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.0.3 -
 #
 
 # -----------------------------------------------
