@@ -1,4 +1,4 @@
-# Postgres Backend: openbmp/psql-consumer
+# Postgres Backend: openbmp/psql-app
 #
 # Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
 #
@@ -13,8 +13,8 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
-#           | docker build --build-arg VERSION=2.0.3 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.0.3 -
+#           | docker build --platform linux/amd64 --build-arg VERSION=dev-2.1.0 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:dev-2.1.0 -
 
 # -----------------------------------------------
 # stage: Build
@@ -51,6 +51,7 @@ COPY --from=build /ws/scripts/dbip-to-psql.py /usr/local/openbmp/
 
 # Add files
 ADD obmp-docker/psql-app/scripts/run /usr/sbin/
+ADD obmp-docker/psql-app/scripts/upgrade_l3vpn.sh /usr/local/openbmp/upgrade_l3vpn.sh
 
 #----------------------------------
 # Define persistent data volumes

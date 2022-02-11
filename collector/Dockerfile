@@ -15,8 +15,8 @@
 #
 #   Example docker build:
 #     tar -cL -C ../../ ./obmp-collector ./obmp-docker/collector \
-#           | docker build --build-arg VERSION=2.0.3 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.0.3 -
+#           | docker build --platform linux/amd64 --build-arg VERSION=dev-2.1.0 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:dev-2.1.0 -
 #
 
 # -----------------------------------------------
@@ -27,7 +27,7 @@ FROM openbmp/dev-image:latest AS build
 COPY obmp-collector/ /ws
 WORKDIR /ws
 
-RUN mkdir -p build && cd build \
+RUN rm -rf build && mkdir -p build && cd build \
     && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ \
     && make \
     && make install
