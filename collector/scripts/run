@@ -61,7 +61,7 @@ if [[ -f /config/openbmpd.conf ]]; then
 fi
 
 # Startup delay to allow for Kafka to start if not already running
-ehco "Waiting 30 seconds to allow for Kafka and other containers to startup."
+echo "Waiting 30 seconds to allow for Kafka and other containers to startup."
 sleep 30
 
 # Start openbmpd and wait - openbmpd runs in foreground
