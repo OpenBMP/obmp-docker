@@ -7,8 +7,7 @@
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
-# BUILD: docker build --platform linux/amd64 -t openbmp/dev-image .
-#        docker tag openbmp/dev-image openbmp/dev-image:latest
+# BUILD: docker buildx build --progress=plain -t openbmp/dev-image:latest .
 
 FROM debian:bullseye-slim AS build
 

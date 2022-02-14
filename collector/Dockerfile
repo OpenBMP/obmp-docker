@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.3
 # Collector: openbmp/collector
 #
 #  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
@@ -13,9 +14,12 @@
 #   Change directories to obmp-docker/collector and run the below from that
 #   directory.
 #
+# Use buildkit - either via export DOCKER_BUILDKIT=1 or by using buildx cli
+#
 #   Example docker build:
-#     tar -cL -C ../../ ./obmp-collector ./obmp-docker/collector \
-#           | docker build --platform linux/amd64 --build-arg VERSION=dev-2.1.0 \
+#     tar -c -C ../../ ./obmp-collector ./obmp-docker/collector \
+#           | docker buildx build --progress=plain \
+#                 --build-arg VERSION=dev-2.1.0 \
 #                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:dev-2.1.0 -
 #
 
@@ -40,13 +44,13 @@ RUN rm -rf build && mkdir -p build && cd build \
 FROM debian:bullseye-slim
 
 # Add files.
-ADD obmp-docker/collector/scripts/install /tmp/
-ADD obmp-docker/collector/scripts/run /usr/sbin/
+ADD --chmod=755 obmp-docker/collector/scripts/install /tmp/
+ADD --chmod=755 obmp-docker/collector/scripts/run /usr/sbin/
 
 ARG VERSION=0
 
 # Copy files from previous stages
-COPY --from=build /usr/bin/openbmpd /usr/bin/
+COPY --chmod=755 --from=build /usr/bin/openbmpd /usr/bin/
 COPY --from=build /usr/etc/openbmp/openbmpd.conf /usr/etc/openbmp/openbmpd.conf
 COPY --from=build /etc/init/openbmpd.conf /etc/init/openbmpd.conf
 COPY --from=build /etc/default/openbmpd.new /etc/default/openbmpd
