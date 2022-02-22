@@ -146,7 +146,9 @@ MAILTO=""
 6 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST >> /var/log/asn_load.log
 
 # Update aggregation table stats
-*/3 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats($POSTGRES_REPORT_WINDOW)"
+*/5 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats('5 minute')"
+*/5 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_l3vpn_chg_stats('5 minute')"
+
 
 # Update peer rib counts
 */15 * * * *	root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_rib_counts()"
@@ -164,6 +166,19 @@ MAILTO=""
 SETVAR
 
 }
+
+# -----------------------------------------------
+# Upgrade SQL
+# -----------------------------------------------
+upgrade() {
+    if [[ ! -f /config/psql-app-upgraded.2.1.0 ]]; then
+      echo "===> Upgrading to 2.1.0"
+      /usr/local/openbmp/upgrade_l3vpn.sh
+      touch /config/psql-app-upgraded.2.1.0
+      echo "===> Done with upgrade"
+    fi
+}
+
 
 # -----------------------------------------------
 # run_consumer
@@ -244,6 +259,8 @@ rm -f /var/run/rsyslogd.pid
 service cron start
 service rsyslog start
 
+upgrade
+
 run_consumer
 
 echo "===> Now running!!!"
@@ -251,3 +268,5 @@ echo "===> Now running!!!"
 while [ 1 ]; do
     sleep 1800
 done
+
+}

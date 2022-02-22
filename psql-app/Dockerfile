@@ -1,6 +1,7 @@
-# Postgres Backend: openbmp/psql-consumer
+# syntax=docker/dockerfile:1.3
+# Postgres Backend: openbmp/psql-app
 #
-# Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+# Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
@@ -11,10 +12,13 @@
 #   Change directories to obmp-docker/psql-app and run the below from that
 #   directory.
 #
+# Use buildkit - either via export DOCKER_BUILDKIT=1 or by using buildx cli
+#
 #   Example docker build:
-#     tar -cL -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
-#           | docker build --build-arg VERSION=2.0.3 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.0.3 -
+#     tar -c -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
+#           | docker buildx build --platform linux/amd64 --progress=plain \
+#                 --build-arg VERSION=2.1.0 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.1.0 -
 
 # -----------------------------------------------
 # stage: Build
@@ -45,12 +49,13 @@ FROM openjdk:17-slim
 # Copy files from previous stages
 COPY --from=build /ws/target/obmp-psql-consumer-0.1.0-SNAPSHOT.jar /usr/local/openbmp/obmp-psql-consumer.jar
 COPY --from=build /ws/database/  /usr/local/openbmp/database
-COPY --from=build /ws/cron_scripts/gen-whois/*.py /usr/local/openbmp/
-COPY --from=build /ws/cron_scripts/rpki/*.py /usr/local/openbmp/
-COPY --from=build /ws/scripts/dbip-to-psql.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/cron_scripts/gen-whois/*.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/cron_scripts/rpki/*.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/scripts/dbip-to-psql.py /usr/local/openbmp/
 
 # Add files
-ADD obmp-docker/psql-app/scripts/run /usr/sbin/
+ADD  --chmod=755 obmp-docker/psql-app/scripts/run /usr/sbin/
+ADD  --chmod=755 obmp-docker/psql-app/scripts/upgrade_l3vpn.sh /usr/local/openbmp/upgrade_l3vpn.sh
 
 #----------------------------------
 # Define persistent data volumes
