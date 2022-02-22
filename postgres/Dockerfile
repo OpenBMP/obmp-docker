@@ -1,16 +1,16 @@
 # Postgres Container
 #
-#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 #  Build:
-#       docker build --platform linux/amd64 -t openbmp/postgres:2.0.3 .
+#       docker build --platform linux/amd64 -t openbmp/postgres:2.1.0 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \
 #              -e POSTGRES_PASSWORD=openbmp \
 #              -e POSTGRES_USER=openbmp \
 #              -e POSTGRES_DB=openbmp \
-#              openbmp/postgres:2.0.2
+#              openbmp/postgres:2.1.0
 
 FROM timescale/timescaledb:2.5.1-pg14
 
@@ -36,9 +36,7 @@ RUN apk update \
     && sed -i -e "s/^\#*listen_addresses.*=.*/listen_addresses = '*'/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl[ ]*=.*/ssl = on/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_cert_file.*=.*/ssl_cert_file = \'\/psql_server.crt\'/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*shared_buffers.*=.*/shared_buffers = ${MEM:-1}GB/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*work_mem.*=.*/work_mem = $(( (${MEM:-1} * 1024) * 5 / 100))MB/" /usr/local/share/postgresql/postgresql.conf.sample
+    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Init timesries location
 RUN echo 'mkdir -p /var/lib/postgresql/ts/data' > /docker-entrypoint-initdb.d/0_obmp_init.sh \

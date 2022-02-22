@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3
 # Postgres Backend: openbmp/psql-app
 #
-# Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+# Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
@@ -17,8 +17,8 @@
 #   Example docker build:
 #     tar -c -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
 #           | docker buildx build --platform linux/amd64 --progress=plain \
-#                 --build-arg VERSION=dev-2.1.0 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:dev-2.1.0 -
+#                 --build-arg VERSION=2.1.0 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.1.0 -
 
 # -----------------------------------------------
 # stage: Build

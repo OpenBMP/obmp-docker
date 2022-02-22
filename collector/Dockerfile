@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3
 # Collector: openbmp/collector
 #
-#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
@@ -19,8 +19,8 @@
 #   Example docker build:
 #     tar -c -C ../../ ./obmp-collector ./obmp-docker/collector \
 #           | docker buildx build --progress=plain \
-#                 --build-arg VERSION=dev-2.1.0 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:dev-2.1.0 -
+#                 --build-arg VERSION=2.1.0 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.1.0 -
 #
 
 # -----------------------------------------------

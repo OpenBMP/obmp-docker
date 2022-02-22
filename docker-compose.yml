@@ -25,7 +25,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - 9092:9092
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: obmp-zookeeper:2181
@@ -50,7 +50,7 @@ services:
     container_name: obmp-grafana
     image: grafana/grafana:8.3.4
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - ${OBMP_DATA_ROOT}/grafana:/var/lib/grafana
       - ${OBMP_DATA_ROOT}/grafana/provisioning:/etc/grafana/provisioning/
@@ -58,14 +58,15 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=openbmp
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_SERVER_ROOT_URL=/   # Change this if you have grafana behind URL/paths, such as /grafana/
-      - GF_INSTALL_PLUGINS=agenty-flowcharting-panel,briangann-datatable-panel,digrich-bubblechart-panel,grafana-piechart-panel,grafana-worldmap-panel,vonage-status-panel
+      - GF_INSTALL_PLUGINS=agenty-flowcharting-panel,grafana-piechart-panel,grafana-worldmap-panel,grafana-simple-json-datasource,vonage-status-panel
 
   psql:
     restart: unless-stopped
     container_name: obmp-psql
-    image: openbmp/postgres:2.0.3
+    image: openbmp/postgres:2.1.0
+    shm_size: 1024m
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
       - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
@@ -78,13 +79,13 @@ services:
   collector:
     restart: unless-stopped
     container_name: obmp-collector
-    image: openbmp/collector:2.0.3
+    image: openbmp/collector:2.1.0
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5
       - net.ipv4.tcp_keepalive_time=180
     ports:
-      - 5000:5000
+      - "5000:5000"
     volumes:
       - ${OBMP_DATA_ROOT}/config:/config
     environment:
@@ -93,13 +94,13 @@ services:
   psql-app:
     restart: unless-stopped
     container_name: obmp-psql-app
-    image: openbmp/psql-app:2.0.3
+    image: openbmp/psql-app:2.1.0
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5
       - net.ipv4.tcp_keepalive_time=180
     ports:
-      - 9005:9005
+      - "9005:9005"
 
     volumes:
       - ${OBMP_DATA_ROOT}/config:/config
@@ -132,3 +133,22 @@ services:
       - POSTGRES_DROP_stats_ip_origins='4 weeks'
       - POSTGRES_DROP_stats_peer_rib='4 weeks'
       - POSTGRES_DROP_stats_peer_update_counts='4 weeks'
+
+  whois:
+    restart: unless-stopped
+    container_name: obmp-whois
+    image: openbmp/whois:2.1.0
+    sysctls:
+      - net.ipv4.tcp_keepalive_intvl=30
+      - net.ipv4.tcp_keepalive_probes=5
+      - net.ipv4.tcp_keepalive_time=180
+    ports:
+      - "4300:43"
+#    volumes:
+#      - ${OBMP_DATA_ROOT}/config:/config
+    environment:
+      - POSTGRES_PASSWORD=openbmp
+      - POSTGRES_USER=openbmp
+      - POSTGRES_DB=openbmp
+      - POSTGRES_HOST=obmp-psql
+      - POSTGRES_PORT=5432
