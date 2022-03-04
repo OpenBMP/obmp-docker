@@ -50,12 +50,13 @@ FROM openjdk:17-slim
 COPY --from=build /ws/target/obmp-psql-consumer-0.1.0-SNAPSHOT.jar /usr/local/openbmp/obmp-psql-consumer.jar
 COPY --from=build /ws/database/  /usr/local/openbmp/database
 COPY  --chmod=755 --from=build /ws/cron_scripts/gen-whois/*.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/cron_scripts/peeringdb/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/cron_scripts/rpki/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/scripts/dbip-to-psql.py /usr/local/openbmp/
 
 # Add files
 ADD  --chmod=755 obmp-docker/psql-app/scripts/run /usr/sbin/
-ADD  --chmod=755 obmp-docker/psql-app/scripts/upgrade_l3vpn.sh /usr/local/openbmp/upgrade_l3vpn.sh
+COPY --chmod=755 obmp-docker/psql-app/upgrade /tmp/upgrade
 
 #----------------------------------
 # Define persistent data volumes
@@ -85,7 +86,7 @@ RUN apt-get update \
 RUN cd /tmp && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3 get-pip.py
 
-RUN pip install ipaddr pykafka
+RUN pip install ipaddr pykafka click
 
 RUN pip3 install urllib3 requests
 

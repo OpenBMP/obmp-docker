@@ -27,13 +27,14 @@ VOLUME ["/var/lib/postgresql/ts"]
 RUN apk update \
     && apk add openssl \
     && openssl req -x509 -newkey rsa:4096 -nodes -subj "/C=US/ST=CA/L=Seattle/O=OpenBMP/CN=localhost"  \
-        -keyout /psql_server.key -out /psql_server.crt -days 365 \
+        -keyout /psql_server.key -out /psql_server.crt -days 2048 \
     && chown postgres /psql_server.* \
     && mkdir -p /var/lib/postgresql/ts \
     && chown postgres /var/lib/postgresql/ts \
     && egrep -q -e '^hostssl( |\t)+all' /usr/local/share/postgresql/pg_hba.conf.sample || \
             echo 'hostssl    all        all        0.0.0.0/0        md5' >> /usr/local/share/postgresql/pg_hba.conf.sample \
     && sed -i -e "s/^\#*listen_addresses.*=.*/listen_addresses = '*'/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && sed -i -e "s/^\#*max_wal_size.*=.*/max_wal_size = 10GB/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl[ ]*=.*/ssl = on/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_cert_file.*=.*/ssl_cert_file = \'\/psql_server.crt\'/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample

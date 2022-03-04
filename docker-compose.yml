@@ -71,7 +71,6 @@ services:
       - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
       - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
     environment:
-      - MEM=10                                                     # Set MEM to at least 2GB but ideally >16GB
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
       - POSTGRES_DB=openbmp

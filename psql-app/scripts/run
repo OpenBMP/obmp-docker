@@ -1,7 +1,7 @@
 #!/bin/bash
 # Postgres Backend: Run script
 #
-#  Copyright (c) 2021-2022 Cisco Systems, Inc. and Tim Evens.  All rights reserved.
+#  Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 # Author: Tim Evens <tim@evensweb.com>
 #
@@ -143,24 +143,26 @@ config_cron() {
 MAILTO=""
 
 # Update ASN info
-6 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST >> /var/log/asn_load.log
+6 */2 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/gen_whois.lock /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/asn_load.log 2>&1
+5 */8 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/peeringdb.lock /usr/local/openbmp/peeringdb.py > /var/log/cron-peeringdb.log 2>&1
 
 # Update aggregation table stats
-*/5 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_chg_stats('5 minute')"
-*/5 * * * *  root   . /usr/local/openbmp/pg_profile && psql -c "select update_l3vpn_chg_stats('5 minute')"
+*/5 * * * *  root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_chg_stats.lock psql -c "select update_chg_stats('5 minute')" > /var/log/cron-update_chg_stats.log 2>&1
+*/5 * * * *  root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_l3vpn_chg_stats.lock psql -c "select update_l3vpn_chg_stats('5 minute')" > /var/log/cron-update_l3vpn_chg_stats.log 2>&1
 
 
 # Update peer rib counts
-*/15 * * * *	root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_rib_counts()"
+*/15 * * * *	root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_peer_rib_counts.lock psql -c "select update_peer_rib_counts()"  > /var/log/cron-update_peer_rib_counts.log 2>&1
 
 # Update peer update counts
-*/30 * * * *    root   . /usr/local/openbmp/pg_profile && psql -c "select update_peer_update_counts(1800)"
+*/30 * * * *    root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_peer_counts.lock psql -c "select update_peer_update_counts(1800)"  > /var/log/cron-update_peer_counts.log 2>&1
 
 # Update global rib
-*/5 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_global_ip_rib('5 minute');"
+*/5 * * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/global_ip_rib.lock psql -c "select update_global_ip_rib('5 minute');" > /var/log/cron-update_global_ip_rib.log 2>&1
+5 */4 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/global_ip_rib.lock psql -c "select purge_global_ip_rib('6 hour');" > /var/log/cron-purge_global_ip_rib.log 2>&1
 
 # Update origin stats
-21 * * * *	root  . /usr/local/openbmp/pg_profile && psql -c "select update_origin_stats('1 hour');"
+21 * * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_origin_stats.lock psql -c "select update_origin_stats('1 hour');" > /var/log/cron-update_origin_stats.log 2>&1
 
 
 SETVAR
@@ -173,7 +175,7 @@ SETVAR
 upgrade() {
     if [[ ! -f /config/psql-app-upgraded.2.1.0 ]]; then
       echo "===> Upgrading to 2.1.0"
-      /usr/local/openbmp/upgrade_l3vpn.sh
+      /tmp/upgrade/upgrade_2.1.0.sh
       touch /config/psql-app-upgraded.2.1.0
       echo "===> Done with upgrade"
     fi
@@ -229,6 +231,13 @@ run_consumer() {
 # Run
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 SYS_NUM_CPU=$(grep processor /proc/cpuinfo | wc -l)
+
+# Clear locks
+if [[ ! -d /tmp/locks ]]; then
+  mkdir /tmp/locks
+else
+  rm -rf /tmp/locks/*
+fi
 
 update_hosts
 
