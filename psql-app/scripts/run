@@ -144,7 +144,7 @@ MAILTO=""
 
 # Update ASN info
 6 */2 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/gen_whois.lock /usr/local/openbmp/gen_whois_asn.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/asn_load.log 2>&1
-5 */8 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/peeringdb.lock /usr/local/openbmp/peeringdb.py > /var/log/cron-peeringdb.log 2>&1
+5 1,12 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/peeringdb.lock /usr/local/openbmp/peeringdb.py > /var/log/cron-peeringdb.log 2>&1
 
 # Update aggregation table stats
 */5 * * * *  root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_chg_stats.lock psql -c "select update_chg_stats('5 minute')" > /var/log/cron-update_chg_stats.log 2>&1
