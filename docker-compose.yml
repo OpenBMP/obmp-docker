@@ -70,6 +70,8 @@ services:
     volumes:
       - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
       - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
+    command: >
+      -c max_wal_size=10GB
     environment:
       - POSTGRES_PASSWORD=openbmp
       - POSTGRES_USER=openbmp
