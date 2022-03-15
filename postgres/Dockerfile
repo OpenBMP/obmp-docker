@@ -14,6 +14,8 @@
 
 FROM timescale/timescaledb:2.5.1-pg14
 
+ENV PG_CRON_VERSION 1.3.0
+
 # Current/working dir
 VOLUME ["/ws"]
 WORKDIR /ws
@@ -25,7 +27,7 @@ VOLUME ["/var/lib/postgresql/ts"]
 
 
 RUN apk update \
-    && apk add openssl \
+    && apk add --no-cache --virtual .build-deps build-base ca-certificates clang-dev llvm12 openssl\
     && openssl req -x509 -newkey rsa:4096 -nodes -subj "/C=US/ST=CA/L=Seattle/O=OpenBMP/CN=localhost"  \
         -keyout /psql_server.key -out /psql_server.crt -days 2048 \
     && chown postgres /psql_server.* \
@@ -37,12 +39,18 @@ RUN apk update \
     && sed -i -e "s/^\#*max_wal_size.*=.*/max_wal_size = 10GB/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl[ ]*=.*/ssl = on/" /usr/local/share/postgresql/postgresql.conf.sample \
     && sed -i -e "s/^\#*ssl_cert_file.*=.*/ssl_cert_file = \'\/psql_server.crt\'/" /usr/local/share/postgresql/postgresql.conf.sample \
-    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample
+    && sed -i -e "s/^\#*ssl_key_file.*=.*/ssl_key_file = \'\/psql_server.key\'/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && sed -i -e "s/^shared_preload_libraries.*/shared_preload_libraries = 'timescaledb,pg_cron'/g" /usr/local/share/postgresql/postgresql.conf.sample
 
-# Init timesries location
-RUN echo 'mkdir -p /var/lib/postgresql/ts/data' > /docker-entrypoint-initdb.d/0_obmp_init.sh \
-    && echo 'chmod 0700 /var/lib/postgresql/ts/data' >> /docker-entrypoint-initdb.d/0_obmp_init.sh \
-    && echo 'psql -U $POSTGRES_USER -c "CREATE TABLESPACE timeseries LOCATION '\''/var/lib/postgresql/ts/data'\'';" $POSTGRES_DB' >> /docker-entrypoint-initdb.d/0_obmp_init.sh
+## Install pg_cron
+RUN wget -O /ws/pg_cron.tgz https://github.com/citusdata/pg_cron/archive/v$PG_CRON_VERSION.tar.gz
+RUN tar xvzf /ws/pg_cron.tgz && cd /ws/pg_cron-1.3.0/ \ 
+    && sed -i.bak -e 's/-Werror//g' Makefile \
+    && sed -i.bak -e 's/-Wno-implicit-fallthrough//g' Makefile \
+    && make && make install \
+    && cd .. && rm -rf pg_cron.tgz && rm -rf pg_cron-* \
+    && apk del .build-deps
 
-
-
+ADD --chmod=755 scripts/0_obmp_init.sh /docker-entrypoint-initdb.d/0_obmp_init.sh
+## providing db name for cron metadata tables
+RUN echo "cron.database_name = 'openbmp'" >> /usr/local/share/postgresql/postgresql.conf.sample
