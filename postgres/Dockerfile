@@ -43,8 +43,8 @@ RUN apk update \
     && sed -i -e "s/^shared_preload_libraries.*/shared_preload_libraries = 'timescaledb,pg_cron'/g" /usr/local/share/postgresql/postgresql.conf.sample
 
 ## Install pg_cron
-RUN wget -O /ws/pg_cron.tgz https://github.com/citusdata/pg_cron/archive/v$PG_CRON_VERSION.tar.gz
-RUN tar xvzf /ws/pg_cron.tgz && cd /ws/pg_cron-1.3.0/ \ 
+RUN wget -O /ws/pg_cron.tgz https://github.com/citusdata/pg_cron/archive/v$PG_CRON_VERSION.tar.gz \
+    && tar xvzf /ws/pg_cron.tgz && cd /ws/pg_cron-1.3.0/ \ 
     && sed -i.bak -e 's/-Werror//g' Makefile \
     && sed -i.bak -e 's/-Wno-implicit-fallthrough//g' Makefile \
     && make && make install \
