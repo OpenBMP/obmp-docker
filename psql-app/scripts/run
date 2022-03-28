@@ -209,11 +209,7 @@ run_consumer() {
         sed -i -e "s/\([ ]*ssl_mode[ ]*:\)\(.*\)/\1 \"${POSTGRES_SSL_MODE}\"/" /config/obmp-psql.yml
     fi
 
-    if [[ $MEM -gt 20 ]]; then
-        heap_mem="3g"
-    else
-        heap_mem="1536m"
-    fi
+    heap_mem=${MEM}G
 
     # Run
     cd /var/log
@@ -275,7 +271,13 @@ run_consumer
 echo "===> Now running!!!"
 
 while [ 1 ]; do
-    sleep 1800
+    sleep 300
+    pgrep -f obmp-psql-consumer.jar >/dev/null 2>&1
+    if [[ $? != 0 ]]; then
+      echo "PSQL consumer is not running, restarting in 30 seconds"
+      cat /var/log/psql-console.log
+      sleep 30
+      run_consumer
+    fi
 done
 
-}
