@@ -64,12 +64,17 @@ services:
     restart: unless-stopped
     container_name: obmp-psql
     image: openbmp/postgres:2.1.0
-    shm_size: 1024m
+    shm_size: 1536m
+    sysctls:
+      - net.ipv4.tcp_keepalive_intvl=30
+      - net.ipv4.tcp_keepalive_probes=5
+      - net.ipv4.tcp_keepalive_time=180
     ports:
       - "5432:5432"
     volumes:
       - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
       - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
+    # alter_job max_runtime in _timescaledb_config.bgw_job ( https://docs.timescale.com/latest/api#alter_job )
     command: >
       -c max_wal_size=10GB
     environment:
@@ -80,7 +85,7 @@ services:
   collector:
     restart: unless-stopped
     container_name: obmp-collector
-    image: openbmp/collector:2.1.0
+    image: openbmp/collector:2.1.1
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5

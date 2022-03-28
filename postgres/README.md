@@ -12,7 +12,7 @@ docker run --rm -it -p 5432:5432 \
     -e POSTGRES_PASSWORD=openbmp \
     -e POSTGRES_USER=openbmp \
     -e POSTGRES_DB=openbmp \
-    openbmp/postgres:build-NNN
+    openbmp/postgres:<version>
 ```
 
 ### Configuration/Environment Variables

@@ -3,7 +3,7 @@
 #  Copyright (c) 2021-2022 Cisco Systems, Inc. and others.  All rights reserved.
 #
 #  Build:
-#        DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t openbmp/postgres:2.1.0 .
+#        DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t openbmp/postgres:2.1.1 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \
@@ -15,7 +15,7 @@
 # -----------------------------------------------
 # stage: Build
 # -----------------------------------------------
-FROM timescale/timescaledb:2.5.1-pg14 AS build
+FROM timescale/timescaledb:2.6.0-pg14 AS build
 
 ENV PG_CRON_VERSION 1.3.0
 
@@ -35,7 +35,7 @@ RUN wget -O pg_cron.tgz https://github.com/citusdata/pg_cron/archive/v$PG_CRON_V
 # stage: Final container
 # -----------------------------------------------
 
-FROM timescale/timescaledb:2.5.1-pg14
+FROM timescale/timescaledb:2.6.0-pg14
 
 ENV PG_CRON_VERSION 1.3.0
 
