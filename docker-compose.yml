@@ -45,6 +45,31 @@ services:
       KAFKA_MESSAGE_MAX_BYTES: 100000000
       KAFKA_LOG_CLEANER_THREADS: 2
 
+  # TODO: Move comment to documentation
+  # You can use SWAG and Let's Encrypt to front the Grafana HTTP port 3000 instance. Below is an example
+  # Create the SWAG direcgtory using "sudo mkdir -m 777 ${OBMP_DATA_ROOT}/swag"
+#  swag:
+#    image: linuxserver/letsencrypt:version-1.11.0
+#    container_name: obmp-swag
+#    cap_add:
+#      - NET_ADMIN
+#    environment:
+#      - PUID=1000
+#      - PGID=1000
+#      - TZ=UTC
+#      - URL=<domain of grafana host, this should be the domain only, not the hostname>
+#      - SUBDOMAINS=<hostname, without the domain>,
+#      - VALIDATION=http
+#      - EMAIL=<your email>
+#      - ONLY_SUBDOMAINS=true
+#      - STAGING=false
+#    volumes:
+#      - /var/openbmp/swag:/config
+#    ports:
+#      - 443:443
+#      - 80:80 #optional
+#    restart: unless-stopped
+
   grafana:
     restart: unless-stopped
     container_name: obmp-grafana
@@ -57,13 +82,32 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=openbmp
       - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_SERVER_ROOT_URL=/   # Change this if you have grafana behind URL/paths, such as /grafana/
+      - GF_USERS_HOME_PAGE=d/obmp-home/obmp-home
       - GF_INSTALL_PLUGINS=agenty-flowcharting-panel,grafana-piechart-panel,grafana-worldmap-panel,grafana-simple-json-datasource,vonage-status-panel
+
+      # TODO: Move comment block to documentation
+      # The below is an example of how to enable OAuth
+      #- GF_AUTH_GENERIC_OAUTH_NAME=MyCompany SSO
+      #- GF_AUTH_GENERIC_OAUTH_ICON=signin
+      #- GF_AUTH_GENERIC_OAUTH_ENABLED=true
+      #- GF_AUTH_GENERIC_OAUTH_CLIENT_ID=<the client ID>
+      #- GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=<client secret>
+      #- GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
+      #- GF_AUTH_GENERIC_OAUTH_AUTH_URL=<auth url, such as https://domain/as/authorization.oauth2>
+      #- GF_AUTH_GENERIC_OAUTH_TOKEN_URL=<token url, such as https://domain/as/token.oauth2
+      #- GF_AUTH_GENERIC_OAUTH_API_URL=<userinfo url, such as https://domain/idp/userinfo.openid
+      #- GF_AUTH_GENERIC_OAUTH_SCOPES=email openid profile
+      #- GF_AUTH_GENERIC_OAUTH_SEND_CLIENT_CREDENTIALS_VIA_POST=true
+      #- GF_SERVER_ENFORCE_DOMAIN=true
+      #- GF_SERVER_PROTOCOL=http
+      #- GF_SERVER_HTTP_PORT=3000
+      #- GF_SERVER_DOMAIN=<fqdn of grafana server>
+      #- GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/
 
   psql:
     restart: unless-stopped
     container_name: obmp-psql
-    image: openbmp/postgres:2.1.0
+    image: openbmp/postgres:2.1.1
     shm_size: 1536m
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
