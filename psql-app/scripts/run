@@ -158,7 +158,7 @@ MAILTO=""
 */30 * * * *    root   . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/update_peer_counts.lock psql -c "select update_peer_update_counts(1800)"  > /var/log/cron-update_peer_counts.log 2>&1
 
 # Update global rib
-*/5 * * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/global_ip_rib.lock psql -c "select update_global_ip_rib('5 minute');" > /var/log/cron-update_global_ip_rib.log 2>&1
+*/5 * * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/global_ip_rib.lock psql -c "select update_global_ip_rib();" > /var/log/cron-update_global_ip_rib.log 2>&1
 5 */4 * * *	root  . /usr/local/openbmp/pg_profile && flock -n /tmp/locks/global_ip_rib.lock psql -c "select purge_global_ip_rib('6 hour');" > /var/log/cron-purge_global_ip_rib.log 2>&1
 
 # Update origin stats
@@ -216,6 +216,7 @@ run_consumer() {
     java -Xmx${heap_mem} -Xms128m -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions \
          -XX:InitiatingHeapOccupancyPercent=30 -XX:G1MixedGCLiveThresholdPercent=30 \
          -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 \
+         -XX:+ExitOnOutOfMemoryError \
          -Duser.timezone=UTC \
          -jar /usr/local/openbmp/obmp-psql-consumer.jar \
          -cf /config/obmp-psql.yml > /var/log/psql-console.log &
