@@ -17,8 +17,8 @@
 #   Example docker build:
 #     tar -c -C ../../ ./obmp-psql ./obmp-docker/psql-app ./obmp-java-api-message \
 #           | docker buildx build --platform linux/amd64 --progress=plain \
-#                 --build-arg VERSION=2.1.1 \
-#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.1.1 -
+#                 --build-arg VERSION=2.2.0 \
+#                 -f obmp-docker/psql-app/Dockerfile -t openbmp/psql-app:2.2.0 -
 
 # -----------------------------------------------
 # stage: Build
@@ -52,7 +52,7 @@ COPY --from=build /ws/database/  /usr/local/openbmp/database
 COPY  --chmod=755 --from=build /ws/cron_scripts/gen-whois/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/cron_scripts/peeringdb/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/cron_scripts/rpki/*.py /usr/local/openbmp/
-COPY  --chmod=755 --from=build /ws/scripts/dbip-to-psql.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/scripts/geo-csv-to-psql.py /usr/local/openbmp/
 
 # Add files
 ADD  --chmod=755 obmp-docker/psql-app/scripts/run /usr/sbin/

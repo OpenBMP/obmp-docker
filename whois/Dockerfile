@@ -6,7 +6,7 @@
 # BUILD:
 #     tar -c -C ../../ ./obmp-whois ./obmp-docker/whois  \
 #           | docker buildx build --platform linux/amd64 --progress=plain \
-#                 -f obmp-docker/whois/Dockerfile -t openbmp/whois:2.1.0 -
+#                 -f obmp-docker/whois/Dockerfile -t openbmp/whois:2.2.0 -
 
 # -----------------------------------------------
 # stage: Build

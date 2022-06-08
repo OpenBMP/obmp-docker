@@ -19,8 +19,8 @@
 #   Example docker build:
 #     tar -c -C ../../ ./obmp-collector ./obmp-docker/collector \
 #           | docker buildx build --progress=plain \
-#                 --build-arg VERSION=2.1.1 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.1.1 -
+#                 --build-arg VERSION=2.2.0 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.2.0 -
 #
 
 # -----------------------------------------------

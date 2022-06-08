@@ -173,12 +173,21 @@ SETVAR
 # Upgrade SQL
 # -----------------------------------------------
 upgrade() {
+
     if [[ ! -f /config/psql-app-upgraded.2.1.0 ]]; then
       echo "===> Upgrading to 2.1.0"
       /tmp/upgrade/upgrade_2.1.0.sh
       touch /config/psql-app-upgraded.2.1.0
       echo "===> Done with upgrade"
     fi
+
+    if [[ ! -f /config/psql-app-upgraded.2.2.0 ]]; then
+      echo "===> Upgrading to 2.2.0"
+      /tmp/upgrade/upgrade_2.2.0.sh
+      touch /config/psql-app-upgraded.2.2.0
+      echo "===> Done with upgrade"
+    fi
+
 }
 
 
