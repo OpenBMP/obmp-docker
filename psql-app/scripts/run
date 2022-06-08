@@ -117,6 +117,25 @@ SETVAR
 }
 
 # -----------------------------------------------
+# Enable DB-IP import
+# -----------------------------------------------
+enable_dbip() {
+    echo "===> Enabling DB-IP Import"
+
+    cat > /etc/cron.d/openbmp-dbip <<SETVAR
+MAILTO=""
+
+$(( $RANDOM % 59 + 1 )) $(( $RANDOM % 23 + 1 )) 1 * *	root  /usr/local/openbmp/db-ip-import.sh > /var/log/cron-dbip-import.log
+
+SETVAR
+
+    # Load DB-IP on start
+    echo "Running DB-IP Import"
+   /usr/local/openbmp/db-ip-import.sh > /var/log/cron-dbip-import.log &
+}
+
+
+# -----------------------------------------------
 # Enable IRR
 # -----------------------------------------------
 enable_irr() {
@@ -256,13 +275,18 @@ source /usr/local/openbmp/pg_profile
 config_cron
 
 rm -f /etc/cron.d/openbmp-rpki
-if [[ ${ENABLE_RPKI:-""} != "" ]]; then
+if [[ ${ENABLE_RPKI:-""} != "" && $ENABLE_RPKI == 1 ]]; then
     enable_rpki
 fi
 
 rm -f /etc/cron.d/openbmp-irr
-if [[ ${ENABLE_IRR:-""} != "" ]]; then
+if [[ ${ENABLE_IRR:-""} != "" && $ENABLE_IRR == 1 ]]; then
     enable_irr
+fi
+
+rm -f /etc/cron.d/openbmp-dbip
+if [[ ${ENABLE_DBIP:-""} != "" && $ENABLE_DBIP == 1 ]]; then
+    enable_dbip
 fi
 
 

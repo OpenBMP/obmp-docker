@@ -53,6 +53,7 @@ COPY  --chmod=755 --from=build /ws/cron_scripts/gen-whois/*.py /usr/local/openbm
 COPY  --chmod=755 --from=build /ws/cron_scripts/peeringdb/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/cron_scripts/rpki/*.py /usr/local/openbmp/
 COPY  --chmod=755 --from=build /ws/scripts/geo-csv-to-psql.py /usr/local/openbmp/
+COPY  --chmod=755 --from=build /ws/scripts/db-ip-import.sh /usr/local/openbmp/
 
 # Add files
 ADD  --chmod=755 obmp-docker/psql-app/scripts/run /usr/sbin/
@@ -86,7 +87,7 @@ RUN apt-get update \
 RUN cd /tmp && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3 get-pip.py
 
-RUN pip install ipaddr pykafka click
+RUN pip install ipaddr pykafka click netaddr
 
 RUN pip3 install urllib3 requests
 

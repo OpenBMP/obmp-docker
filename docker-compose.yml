@@ -162,6 +162,7 @@ services:
       - RPKI_USER=None
       - ENABLE_RPKI=1                                   # 1 enables, 0 disables RPKI sync
       - ENABLE_IRR=1                                    # 1 enables, 0 disables IRR sync
+      - ENABLE_DBIP=1                                   # 1 enables, 0 disables DBIP import
       - POSTGRES_REPORT_WINDOW='8 minute'               # default POSTGRESS window to select when building
                                                         # summary tables. For deployments that absorb large
                                                         # bursts increase the value, ex 60 minute
