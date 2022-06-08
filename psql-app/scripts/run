@@ -110,7 +110,7 @@ enable_rpki() {
 MAILTO=""
 
 # Update RPKI
-31 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/rpki_validator.py -u $PGUSER -p $PGPASSWORD -s $RPKI_URL --rpkipassword $RPKI_PASS --rpkiuser $RPKI_USER $PGHOST
+31 */2 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/rpki_validator.py -u $PGUSER -p $PGPASSWORD -s $RPKI_URL --rpkipassword $RPKI_PASS --rpkiuser $RPKI_USER $PGHOST > /var/log/cron-rpki-import.log
 
 SETVAR
 
@@ -145,13 +145,13 @@ enable_irr() {
 MAILTO=""
 
 # Update IRR
-1 1 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/irr_load.log
+1 1 * * *	root  . /usr/local/openbmp/pg_profile && /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST 2>&1 > /var/log/irr_load.log
 
 SETVAR
 
     # Load IRR data
     echo "Loading IRR data"
-    /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST > /var/log/irr_load.log &
+    /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST  2>&1  > /var/log/irr_load.log &
 }
 
 # -----------------------------------------------
