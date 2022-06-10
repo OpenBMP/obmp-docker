@@ -108,6 +108,7 @@ services:
     restart: unless-stopped
     container_name: obmp-psql
     image: openbmp/postgres:2.2.0
+    privileged: true
     shm_size: 1536m
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
