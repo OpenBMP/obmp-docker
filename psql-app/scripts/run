@@ -125,13 +125,13 @@ enable_dbip() {
     cat > /etc/cron.d/openbmp-dbip <<SETVAR
 MAILTO=""
 
-$(( $RANDOM % 59 + 1 )) $(( $RANDOM % 23 + 1 )) 1 * *	root  /usr/local/openbmp/db-ip-import.sh > /var/log/cron-dbip-import.log
+$(( $RANDOM % 59 + 1 )) $(( $RANDOM % 23 + 1 )) 1 * *	root  /usr/local/openbmp/db-ip-import.sh 2>&1 > /var/log/cron-dbip-import.log
 
 SETVAR
 
     # Load DB-IP on start
     echo "Running DB-IP Import"
-   /usr/local/openbmp/db-ip-import.sh > /var/log/cron-dbip-import.log &
+   /usr/local/openbmp/db-ip-import.sh 2>/var/log/cron-dbip-import.log > /var/log/cron-dbip-import.log &
 }
 
 
@@ -151,7 +151,7 @@ SETVAR
 
     # Load IRR data
     echo "Loading IRR data"
-    /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST  2>&1  > /var/log/irr_load.log &
+    /usr/local/openbmp/gen_whois_route.py -u $PGUSER -p $PGPASSWORD $PGHOST  2>/var/log/irr_load.log  > /var/log/irr_load.log &
 }
 
 # -----------------------------------------------
