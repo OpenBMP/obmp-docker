@@ -23,8 +23,8 @@
 # -----------------------------------------------
 # stage: Final container
 # -----------------------------------------------
-#FROM timescale/timescaledb-ha:pg14.3-ts2.7-latest
-FROM timescale/timescaledb-ha:pg14-ts2.7-oss-latest
+FROM timescale/timescaledb-ha:pg14-ts2.7-latest
+
 ARG VERSION=0.0.0
 
 ENV PGDATA=/var/lib/postgresql/data
@@ -42,8 +42,8 @@ USER root
 
 RUN  rm -rf /usr/lib/postgresql/12 /usr/lib/postgresql/13  \
      && mkdir -p /var/lib/postgresql/data /var/lib/postgresql/ts/data \
-     && chown -R postgres /var/lib/postgresql/data /var/lib/postgresql/ts/data
+     && chown -R postgres /var/lib/postgresql/data /var/lib/postgresql/ts/data \
+     && mkdir -p /usr/local/openbmp \
+     && touch /usr/local/openbmp/version-${VERSION}
 
 USER postgres
-
-RUN touch /var/lib/postgresql/data/version-${VERSION}

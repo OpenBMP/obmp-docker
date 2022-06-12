@@ -74,9 +74,21 @@ initdb_postgres() {
     if [[ ! -f /config/do_not_init_db ]]; then
       echo " ===> Initializing the DB"
 
+      echo "Waiting for postgres to start..."
+      done=0
+      while [  $done -eq 0 ]; do
+          psql -c "select 1;" > /dev/null 2>&1
+          if [[ $? -ne 0 ]]; then
+             echo "    postgres not running, sleeping for 20 seconds..."
+             sleep 20
+          else
+              done=1
+              break
+          fi
+      done
+
       # Load the schema files
       echo " ===> Loading Schemas"
-
 
       echo "------" > /var/log/db_schema_load.log
       for file in $(ls -v /usr/local/openbmp/database/*.sql); do
