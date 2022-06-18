@@ -145,7 +145,7 @@ services:
   psql-app:
     restart: unless-stopped
     container_name: obmp-psql-app
-    image: openbmp/psql-app:2.2.0
+    image: openbmp/psql-app:2.2.1
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5

@@ -3,7 +3,7 @@
 --
 -- Ugrade from 2.1.0 to 2.2.0 changes
 -- -----------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS  ON ip_rib (prefix);
+CREATE INDEX IF NOT EXISTS ip_rib_prefix_idx ON ip_rib (prefix);
 
 CREATE OR REPLACE FUNCTION update_global_ip_rib(max_interval interval DEFAULT '2 hour')
 	RETURNS void AS $$
@@ -37,9 +37,8 @@ BEGIN
 
 	FOR chg_prefix IN
 		SELECT prefix
-		FROM ip_rib_log
-		WHERE timestamp >= start_time
-		  AND origin_as != 23456
+		FROM ip_rib_log WHERE timestamp >= start_time AND origin_as != 23456
+		UNION SELECT prefix FROM ip_rib where first_added_timestamp >= start_time
 		GROUP BY prefix
 
 		LOOP
