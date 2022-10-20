@@ -18,9 +18,9 @@
 #
 #   Example docker build:
 #     tar -c -C ../../ ./obmp-collector ./obmp-docker/collector \
-#           | docker buildx build --progress=plain \
-#                 --build-arg VERSION=2.2.0 \
-#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.2.0 -
+#           | docker buildx build --platform linux/amd64 --progress=plain \
+#                 --build-arg VERSION=2.2.3 \
+#                 -f obmp-docker/collector/Dockerfile -t openbmp/collector:2.2.3 -
 #
 
 # -----------------------------------------------
@@ -32,7 +32,7 @@ COPY obmp-collector/ /ws
 WORKDIR /ws
 
 RUN rm -rf build && mkdir -p build && cd build \
-    && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ \
+    && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ \
     && make \
     && make install
 
@@ -41,7 +41,7 @@ RUN rm -rf build && mkdir -p build && cd build \
 # stage: Final container
 # -----------------------------------------------
 # Pull base image.
-FROM debian:bullseye-slim
+FROM debian:stable-slim
 
 # Add files.
 ADD --chmod=755 obmp-docker/collector/scripts/install /tmp/
@@ -52,9 +52,6 @@ ARG VERSION=0
 # Copy files from previous stages
 COPY --chmod=755 --from=build /usr/bin/openbmpd /usr/bin/
 COPY --from=build /usr/etc/openbmp/openbmpd.conf /usr/etc/openbmp/openbmpd.conf
-COPY --from=build /etc/init/openbmpd.conf /etc/init/openbmpd.conf
-COPY --from=build /etc/default/openbmpd.new /etc/default/openbmpd
-COPY --from=build /etc/logrotate.d/openbmpd /etc/logrotate.d/openbmpd
 
 # Proxy servers
 #ENV http_proxy http://proxy:80

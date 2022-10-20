@@ -1,5 +1,17 @@
 ---
 version: '3'
+volumes:
+  data-volume:
+    driver_opts:
+      type: none
+      device: ${OBMP_DATA_ROOT}/postgres/data
+      o: bind
+  ts-volume:
+    driver_opts:
+      type: none
+      device: ${OBMP_DATA_ROOT}/postgres/ts
+      o: bind
+
 services:
 
   zookeeper:
@@ -73,7 +85,7 @@ services:
   grafana:
     restart: unless-stopped
     container_name: obmp-grafana
-    image: grafana/grafana:8.5.4
+    image: grafana/grafana:9.1.7
     ports:
       - "3000:3000"
     volumes:
@@ -107,7 +119,7 @@ services:
   psql:
     restart: unless-stopped
     container_name: obmp-psql
-    image: openbmp/postgres:2.2.0
+    image: openbmp/postgres:2.2.1
     privileged: true
     shm_size: 1536m
     sysctls:
@@ -117,8 +129,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ${OBMP_DATA_ROOT}/postgres/data:/var/lib/postgresql/data  # change this to 80GB SSD slice/partition
-      - ${OBMP_DATA_ROOT}/postgres/ts:/var/lib/postgresql/ts      # Chnage this to 500GB SSD slice/partition
+      - data-volume:/var/lib/postgresql/data
+      - ts-volume:/var/lib/postgresql/ts
     # alter_job max_runtime in _timescaledb_config.bgw_job ( https://docs.timescale.com/latest/api#alter_job )
     command: >
       -c max_wal_size=10GB
@@ -130,7 +142,7 @@ services:
   collector:
     restart: unless-stopped
     container_name: obmp-collector
-    image: openbmp/collector:2.2.0
+    image: openbmp/collector:2.2.3
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5
@@ -145,7 +157,7 @@ services:
   psql-app:
     restart: unless-stopped
     container_name: obmp-psql-app
-    image: openbmp/psql-app:2.2.1
+    image: openbmp/psql-app:2.2.2
     sysctls:
       - net.ipv4.tcp_keepalive_intvl=30
       - net.ipv4.tcp_keepalive_probes=5

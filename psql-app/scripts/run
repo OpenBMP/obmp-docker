@@ -205,6 +205,8 @@ SETVAR
 # -----------------------------------------------
 upgrade() {
 
+  if [[ -f /config/do_not_init_db ]]; then
+
     if [[ ! -f /config/psql-app-upgraded.2.1.0 ]]; then
       echo "===> Upgrading to 2.1.0"
       /tmp/upgrade/upgrade_2.1.0.sh
@@ -226,7 +228,19 @@ upgrade() {
       echo "===> Done with upgrade"
     fi
 
+   if [[ ! -f /config/psql-app-upgraded.2.2.2 ]]; then
+      echo "===> Upgrading to 2.2.2"
+      /tmp/upgrade/upgrade_2.2.2.sh
+      touch /config/psql-app-upgraded.2.2.2
+      echo "===> Done with upgrade"
+    fi
 
+  else
+      touch /config/psql-app-upgraded.2.1.0
+      touch /config/psql-app-upgraded.2.2.0
+      touch /config/psql-app-upgraded.2.2.1
+      touch /config/psql-app-upgraded.2.2.2
+  fi
 }
 
 

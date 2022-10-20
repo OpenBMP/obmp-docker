@@ -6,9 +6,9 @@
 #
 # Author: Tim Evens <tim@openbmp.org>
 #
-# BUILD: docker buildx build --progress=plain -t openbmp/dev-image:latest .
+# BUILD: docker buildx build  --platform linux/amd64 --progress=plain -t openbmp/dev-image:latest .
 
-FROM debian:bullseye-slim AS build
+FROM debian:stable-slim AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,8 +18,27 @@ WORKDIR /ws
 RUN apt-get update
 RUN apt-get install -y openjdk-17-jdk-headless maven
 RUN mkdir -p /usr/share/man/man1/ \
-    && apt-get -y install git gcc g++ libboost-dev cmake zlib1g-dev libssl-dev libsasl2-dev \
-         liblz4-dev libzstd-dev librdkafka-dev
+    && apt-get -y install git gcc g++ libboost-dev cmake libssl-dev libsasl2-dev \
+         curl wget libgss-dev   liblz4-dev libzstd-dev
+    # zlib1g-dev
+
+# Build/install zlib - zlib1g-dev does not work for static builds of librdkafka
+RUN cd /tmp && git clone https://github.com/madler/zlib.git \
+    && cd zlib \
+    && git checkout v1.2.12 \
+    && CFLAGS=-fPIC  ./configure --static \
+    && make install
+
+# Build/install librdkafka
+RUN cd /tmp && git clone https://github.com/edenhill/librdkafka.git \
+    && cd librdkafka \
+    && git checkout v1.9.2 \
+    && ./configure --enable-static --disable-curl \
+    && make \
+    && make install
+
+# Installed under /usr/local/lib
+
 # Build/install yaml-cpp
 RUN cd /tmp && git clone https://github.com/jbeder/yaml-cpp.git \
     && cd yaml-cpp \

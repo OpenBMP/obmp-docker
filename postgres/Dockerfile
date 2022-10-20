@@ -4,16 +4,16 @@
 #
 #  Build:
 #        DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
-#            --build-arg VERSION=2.2.0 \
+#            --build-arg VERSION=2.2.1 \
 #            --squash \
-#            -t openbmp/postgres:2.2.0 .
+#            -t openbmp/postgres:2.2.1 .
 #
 #  Run:
 #       docker run --rm -it -p 5432:5432 \
 #              -e POSTGRES_PASSWORD=openbmp \
 #              -e POSTGRES_USER=openbmp \
 #              -e POSTGRES_DB=openbmp \
-#              openbmp/postgres:2.2.0
+#              openbmp/postgres:2.2.1
 
 # -----------------------------------------------
 # stage: Build
@@ -23,7 +23,7 @@
 # -----------------------------------------------
 # stage: Final container
 # -----------------------------------------------
-FROM timescale/timescaledb-ha:pg14-ts2.7-latest
+FROM timescale/timescaledb-ha:pg14-ts2.8-latest
 
 ARG VERSION=0.0.0
 
